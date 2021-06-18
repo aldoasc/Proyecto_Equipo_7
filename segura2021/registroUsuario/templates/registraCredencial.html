@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{% block title %} Registro de una nueva credencial {% endblock %}</title>
+</head>
+<body>
+{% block header %}
+<h2> Registrate!</h2>
+<a id="botonLogin" href="{% url 'index' %}">Inicio</a>
+
+{% endblock %}
+
+{% block content %}
+
+<form method="POST">
+	{% csrf_token %}
+	<div class="row">
+		<label>Nombre cuenta:</label>
+		<input type="text" name="cuenta">
+	</div>
+
+	<div class="col">
+		<label>Contraseña :</label>
+		<input type="password" name="contraseña">
+	</div>
+	<div class="row">
+		<button type="submit" class="btn btn-outline-success btn-block">Registrar</button>
+	</div>
+</form>
+
+
+
+{% endblock %}
+
+{% block footer %}
+<h5>Universidad Veracruzana</h5>
+
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{% block title %}Bienvenido{% endblock %}</title>
+</head>
+<body>
+
+{% block content %}
+
+<h1>Estas en la plataforma de almacenamiento de contraseñas, porfavor ingresa o registrate para empezar a utilizar el sistema.</h1>
+
+<a id="boton" href="{% url 'login' %}">Ingresar</a>
+<a href="{% url 'registro' %}">Registrarse</a>
+
+
+{% endblock %}
+
+{% block footer %}
+<h5>Universidad Veracruzana</h5>
+{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block header%}
+
+<h1>Ingresa</h1>
+
+{% endblock %}
+
+{% block content %}
+<nav>
+<a id="botonLogin" href="{% url 'index' %}">Inicio</a>
+<a id="botonLogin" href="{% url 'registro'%}">Registrarse</a>
+</nav>
+
+<form method="POST">
+	{% csrf_token %}
+	<div class="row">
+		<label for="nickname">Nick</label>
+		<input type="text" id="nickname"name="nickname">
+	</div>
+	<div class="row">
+		<label for="pwd">Contraseña:</label>
+		<input type="password" id="pwd">
+	</div>
+	<div class="row">
+		<button id="boton" type="submit" class="btn btn-primary">Ingresar</button>
+		
+	</div>
+	
+</form>
+
+
+
+{% endblock %}
