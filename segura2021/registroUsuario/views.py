@@ -10,6 +10,7 @@ import base64
 import hashlib
 import datetime
 from datetime import timezone
+from registroUsuario.decoradores import login_requerido
 
 #---------------Para cifrado AES------------------------#
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -66,16 +67,18 @@ def registroUsuario(request):
     pem_public=convertir_llave_publica_bytes(public_key)
     #decofificacion de llave publica base64
     llave_publica_texto=generar_bytes_a_texto(pem_public)
+    #ingresarla a la base
+    usuario.Llave_publica=pem_public
 
 
 
 
 
 
-    usuario.nombre_nompleto = nombre_completo
-    usuario.nick = nick
-    usuario.correo_electronico = correo_electronico
-    usuario.password = password
+    usuario.Nombre_Completo = nombre_completo
+    usuario.Nick = nick
+    usuario.Correo_electronico = correo_electronico
+
     usuario.save()
     return redirect('/login')
 
@@ -135,7 +138,7 @@ def generar_iv():
 	return iv
 
 def generar_hash_password(password_usuario):
-    hasher=hashlib.sha512()
+    hasher = hashlib.sha512()
     hasher.update(password_usuario.encode('utf-8'))
     return hasher.hexdigest()
 
@@ -148,6 +151,36 @@ def generar_texto_a_bytes(contenido_cifrado_texto):
     texto=base64.b64decode(contenido_cifrado_texto)
     return texto
 
+
+
+#credenciales
+
+def registraCredencial(request):
+    template = 'registraCredencial.html'
+    if request.method == 'GET':
+        return render(request,template)
+    elif request.method == 'POST':
+        Sitio = request.POST.get('sitio', '').strip()
+        Usuario = request.POST.get('usuario', '').strip()
+        Contraseña = request.POST.get('contraseña', '').strip()
+
+        iv = os.urandom(16)
+        llave_aes = generar_llave_aes_from_password(Contraseña)
+        Contraseña = bytes(Contraseña, 'utf-8')
+        contraseña_cifrada = cifrar(Contraseña, llave_aes, iv)
+        Contraseña = generar_bytes_a_texto(contraseña_cifrada)
+        iv = generar_bytes_a_texto(iv)
+
+        credencial = models.Credencial()
+        credencial.sitio = Sitio
+        credencial.usuario = Usuario
+        credencial.iv = iv
+        credencial.contraseña = Contraseña
+
+
+
+        credencial.save()
+        return redirect('/home')
 
 
 
@@ -180,26 +213,50 @@ def credencial(request):
 	return render(request,template)
 
 def login(request):
-	template='login.html'
-	ingreso=request.session.get('ingreso',False)
-	if request.method=='GET':
+	template = 'login.html'
+	ingreso = request.session.get('ingreso',False)
+	if request.method == 'GET':
 		if ingreso:
 			return redirect('home/')
 		return render(request,template)
-	elif request.method=='POST':
-		nickname=request.POST.get('nickname','').strip()
-		password=request.POST.get('contraseña','').strip()
+	elif request.method == 'POST':
+		nickname = request.POST.get('nickname','').strip()
+		password = request.POST.get('contraseña','').strip()
 		try:
-			hash_password=generar_hash_password(password)
+			hash_password = generar_hash_password(password)
 			models.Usuario.objects.get(Nick=nickname,Password=hash_password)
-			request.session['ingreso']=True
-			request.session['nombre']=nickname
+			request.session['ingreso'] = True
+			request.session['nombre'] = nickname
 			return redirect('home/')
 		except:
-			errores={'usuario o contraseña incorrecta'}
+			errores = ['usuario o contraseña incorrecta']
 			return render(request,template,{'errores': errores})
 
 #logout para cerrar la sesion
 def logOut(request):
     request.session.flush()
     return redirect('/login')
+
+
+
+def password_correcto(password):
+    errores_password = []
+    if '' in password:
+        errores_password.append('La contraseña no puede tener espacios')
+    if not any(character.isupper() for caracter in password):
+        errores_password.append('La contraseña requiere almenos una Mayuscula')
+    if not any(character.isdigit() for caracter in password):
+        errores_password.append('La contraseña debe tener almenos 1 numero')
+    if len(password) < 10:
+        errores_password.append('La contraseña debe tener almenos 10 caracteres')
+    return errores_password
+
+def nick_duplicado(usuario):
+    nick = models.Usuario.objects.filter(nick=usuarios.nick)
+    if len(nick) > 0:
+        return True
+    return False
+
+@login_requerido
+def algo(request):
+    return(request)
